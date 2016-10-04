@@ -214,8 +214,8 @@ define([],function(){
                         }
                     }
                 }
+                _onaction(this, 0,'unshift',args,undefined,arguments);
             }
-            _onaction(this, 0,'unshift',args,undefined,arguments);
             return this.length;
         }
 
@@ -224,10 +224,10 @@ define([],function(){
             var _start = (start !== undefined ? Math.max(0,start) : 0),
                 _end = ((end !== undefined && end <= this.length) ? Math.min(this.length,Math.max(0,end)) : this.length);
 
-                for(var x=_start;x<_end;x++)
-                {
-                    this[x] = value;
-                }
+            for(var x=_start;x<_end;x++)
+            {
+                this[x] = value;
+            }
             _onaction(this,0,'fill',value,undefined,arguments);
             return this;
         }
@@ -268,6 +268,7 @@ define([],function(){
                     if(_onadd(this,index,'add',value) !== true)
                     {
                         Object.defineProperty(this,index,setBindDescriptor.call(this,value,index));
+                        _onaction(this,index,'add',value,undefined,arguments);
                     }
                 }
                 else
@@ -276,24 +277,17 @@ define([],function(){
                     return this;
                 }
             }
-            _onaction(this,index,'add',value,undefined,arguments);
             return this;
         }
 
         function addPointer(objArr,prop)
         {
-            if(this[key] !== undefined)
-            {
-                console.error('Your attempting to add the key: '+key+' that already exists on',this,' use .set() or direct set instead');
-                return this;
-            }
-
             if(_onadd(this,key,objArr[prop]) !== true)
             {
                 var desc = Object.getOwnPropertyDescriptor(objArr,prop);
                 Object.defineProperty(this,prop,setPointer(objArr,prop,desc));
+                _onaction(this, prop,'add',objArr[prop],undefined,arguments);
             }
-            _onaction(this, prop,'add',objArr[prop],undefined,arguments);
             return this;
         }
 
@@ -313,8 +307,8 @@ define([],function(){
                 {
                     Object.defineProperty(this,index,setBindDescriptor.call(this,value,index));
                 }
+                _onaction(this, index,'set',value,undefined,arguments);
             }
-            _onaction(this, index,'set',value,undefined,arguments);
             return this;
         }
 
@@ -438,8 +432,8 @@ define([],function(){
             var _value = value,
                 _oldValue = value,
                 _prop = index,
-                _set = this.onset,
-                _update = this.onupdate;
+                _set = _onset,
+                _update = _onupdate;
             return {
                 get:function(){
                     return _value;

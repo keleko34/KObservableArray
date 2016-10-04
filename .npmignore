@@ -4,3 +4,4 @@ support
 test
 examples
 *.sock
+bower_components/*

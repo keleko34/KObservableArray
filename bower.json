@@ -19,7 +19,8 @@
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "tests",
+    ".gulp"
   ],
   "devDependencies": {
     "requirejs": "~2.1.11"
