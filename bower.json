@@ -1,0 +1,27 @@
+{
+  "name": "KObservableArray",
+  "description": "A single layer event based observable array",
+  "version": "1.0.2",
+  "main": "index",
+  "authors": [
+    "Keleko34"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "Array",
+    "Binding",
+    "Events",
+    "Listeners"
+  ],
+  "homepage": "https://github.com/keleko34/KObservableArray",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "requirejs": "~2.1.11"
+  }
+}
