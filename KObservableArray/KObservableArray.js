@@ -476,7 +476,7 @@ define([],function(){
 
         Object.defineProperties(_arr,{
             __kbname:setDescriptor((name || ""),true),
-            __kbref:setDescriptor((parent || null),true),
+            __kbref:setDescriptor((parent ? parent.__kbref || parent : _arr),true),
             __kbscopeString:setDescriptor((scope || ""),true),
             __kbImmediateParent:setDescriptor((parent || null),true),
             splice:setDescriptor(splice),

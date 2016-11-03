@@ -1,7 +1,7 @@
 {
   "name": "KObservableArray",
   "description": "A single layer event based observable array",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "index",
   "authors": [
     "Keleko34"
