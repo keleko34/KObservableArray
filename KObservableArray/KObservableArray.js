@@ -280,13 +280,13 @@ define([],function(){
             return this;
         }
 
-        function addPointer(objArr,prop)
+        function addPointer(objArr,prop,newProp)
         {
-            if(_onadd(this,key,objArr[prop]) !== true)
+            if(_onadd(this,(newProp || prop),objArr[prop]) !== true)
             {
                 var desc = Object.getOwnPropertyDescriptor(objArr,prop);
-                Object.defineProperty(this,prop,setPointer(objArr,prop,desc));
-                _onaction(this, prop,'add',objArr[prop],undefined,arguments);
+                Object.defineProperty(this,(newProp || prop),setPointer(objArr,prop,desc));
+                _onaction(this, (newProp || prop),'add',objArr[prop],undefined,arguments);
             }
             return this;
         }
