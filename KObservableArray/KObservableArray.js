@@ -417,13 +417,13 @@ define([],function(){
             }
         }
 
-        function setDescriptor(value,writable)
+        function setDescriptor(value,writable,redefinable)
         {
             return {
                 value:value,
                 writable:!!writable,
                 enumerable:false,
-                configurable:false
+                configurable:!!redefinable
             }
         }
 
@@ -475,10 +475,10 @@ define([],function(){
         }
 
         Object.defineProperties(_arr,{
-            __kbname:setDescriptor((name || ""),true),
-            __kbref:setDescriptor((parent ? (parent.__kbref || parent) : _arr),true),
-            __kbscopeString:setDescriptor((scope || ""),true),
-            __kbImmediateParent:setDescriptor((parent || null),true),
+            __kbname:setDescriptor((name || ""),true,true),
+            __kbref:setDescriptor((parent ? (parent.__kbref || parent) : _arr),true,true),
+            __kbscopeString:setDescriptor((scope || ""),true,true),
+            __kbImmediateParent:setDescriptor((parent || null),true,true),
             splice:setDescriptor(splice),
             push:setDescriptor(push),
             pop:setDescriptor(pop),
