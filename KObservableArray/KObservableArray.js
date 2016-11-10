@@ -453,6 +453,19 @@ define([],function(){
             }
         }
 
+        function prototype(prop,value)
+        {
+          if(this[prop] === undefined)
+          {
+              Object.defineProperty(this.__proto__,prop,setDescriptor(value,true,true));
+          }
+          else
+          {
+            console.error('Your attempting to add your prototype with the prop: ',prop,' that already exists');
+          }
+          return this;
+        }
+
         function subscribe(prop,func)
         {
             if(_subscribers[prop] === undefined) _subscribers[prop] = [];
@@ -488,6 +501,7 @@ define([],function(){
             reverse:setDescriptor(reverse),
             sort:setDescriptor(sort),
             add:setDescriptor(add),
+            prototype:setDescriptor(prototype),
             addPointer:setDescriptor(addPointer),
             set:setDescriptor(set),
             remove:setDescriptor(remove),
