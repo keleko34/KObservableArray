@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Testing</title>
-    <script type="text/javascript" src="../KObservableArrays/Build/KObservableArrays.js"></script>
+    <script type="text/javascript" src="../KObservableArray/Build/KObservableArray.js"></script>
   </head>
   <body>
     <h1 id="testDiv">Test Title</h1>
@@ -12,7 +12,7 @@
     <textarea id="testTextarea"></textarea>
     <div id="testDisplay"></div>
     <script type="text/javascript">
-        var OArr = CreateKObservableArrays("test");
+        var OArr = KObservableArray("test");
 
         OArr.add(500);
         OArr.add(600);
@@ -21,42 +21,22 @@
 
         OArr.subscribe(0,function(e){
           console.log(e);
-          console.log("change happend on 0, ",e.value,e.oldValue,e.local[0]);
         })
         .subscribe(1,function(e){
           console.log(e);
-          console.log("change happend on 1, ",e.value,e.oldValue,e.local[1]);
         })
 
         OArr[0] = 2000;
 
         OArr.addActionListener('push',function(e){
           console.log(e);
-          console.log('a push happened ',e.value,e.key);
+          console.log('a push happened ',e.event.value,e.key);
         })
 
         OArr.push(300);
         OArr[1] = 200;
 
-        OArr.onadd = function(e){
-          console.log(e);
-          console.log("onadd happened: ",e.value,e.key);
-        }
-
-        OArr.onremove = function(e){
-          console.log(e);
-          console.log("onremove happened: ",e.value,e.key);
-        }
-
-        OArr.onset = function(e){
-          console.log(e);
-          console.log("onset happened: ",e.value,e.oldValue,e.key);
-        }
-
-        OArr.onupdate = function(e){
-          console.log(e);
-          console.log("onupdate happened: ",e.value,e.oldValue,e.key);
-        }
+        console.log(OArr[0],OArr[1],OArr[2],OArr[3]);
 
         OArr.splice(0,1,"cool");
 
