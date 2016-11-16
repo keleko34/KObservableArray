@@ -3,62 +3,68 @@ define([],function(){
     function CreateKObservableArray(name,parent,scope)
     {
         var _arr = [],
+            _subscribers = {},
             _actions = {
                 splice:[],
+                postsplice:[],
                 push:[],
+                postpush:[],
                 pop:[],
+                postpop:[],
                 shift:[],
+                postshift:[],
                 unshift:[],
+                postunshift:[],
                 fill:[],
+                postfill:[],
                 reverse:[],
+                postreverse:[],
                 sort:[],
+                postsort:[],
                 add:[],
+                postadd:[],
                 set:[],
-                remove:[]
+                postset:[],
+                remove:[],
+                postremove:[],
+                addDataListener:[],
+                removeDataListener:[],
+                addDataUpdateListener:[],
+                removeDataUpdateListener:[],
+                addDataCreateListener:[],
+                removeDataCreateListener:[],
+                addDataRemoveListener:[],
+                removeDataRemoveListener:[]
             },
-            _onaction = function(arr,key,type,value,oldValue,args)
-            {
-                var e = new eventObject(arr,key,type,value,oldValue,args);
 
-                for(var x=0,_curr=_actions[type],len=_curr.length;x!==len;x++)
+            /* Action/method based events to alter the action being performed */
+            _onaction = function(a)
+            {
+                for(var x=0,_curr=_actions[a.type],len=_curr.length;x!==len;x++)
                 {
-                    _curr[x](e);
-                    if(e._stopPropogration) break;
+                    _curr[x](a);
+                    if(a._stopPropogration) break;
+                }
+                return a._preventDefault;
+            },
+
+            /* Data based events to alter the data being set */
+            _onevent = function(e)
+            {
+                var _local = e.local[e.listener];
+                if(isObject(_local)) _local = _local[e.key];
+                if(isArray(_local))
+                {
+                    for(var x=0,len=_local.length;x!==len;x++)
+                    {
+                        _local[x](e);
+                        if(e._stopPropogration) break;
+                    }
                 }
                 return e._preventDefault;
-            },
-            _subscribers = {},
-            _onset = function(arr,key,action,value,oldValue)
-            {
-              var e = new eventObject(arr,key,action,value,oldValue);
-              _arr.onset(e);
-              return e._preventDefault;
-            },
-            _onupdate = function(arr,key,action,value,oldValue)
-            {
-              var e = new eventObject(arr,key,action,value,oldValue);
-              _arr.onupdate(e);
-              return e._preventDefault;
-            },
-            _onadd = function(arr,key,action,value,oldValue)
-            {
-              var e = new eventObject(arr,key,action,value,oldValue);
-              _arr.onadd(e);
-              return e._preventDefault;
-            },
-            _onremove = function(arr,key,action,value,oldValue)
-            {
-              var e = new eventObject(arr,key,action,value,oldValue);
-              _arr.onremove(e);
-              return e._preventDefault;
-            }
+            };
 
-        _arr.onadd = function(e){};
-        _arr.onremove = function(e){};
-        _arr.onset = function(e){};
-        _arr.onupdate = function(e){};
-        _arr.onobject = function(v){return v};
-
+        /* Event Objects */
         function eventObject(arr,key,action,value,oldValue,args)
         {
             this.stopPropogation = function(){this._stopPropogration = true;}
@@ -75,14 +81,104 @@ define([],function(){
             this.oldValue = oldValue;
         }
 
-        function isArray(v)
+        function actionObject(type,prop,ev,args)
         {
-          return (Object.prototype.toString.call(v) === '[object Array]');
+            this.stopPropogation = function(){this._stopPropogration = true;}
+            this.preventDefault = function(){this._preventDefault = true;}
+            this.type = type;
+            this.key = prop;
+            this.event = ev;
+            this.args = args;
         }
 
+        /* Main Listening methods */
+        function addListener(type,listener)
+        {
+            var _listeners = _arr[listener];
+            return function(prop,func)
+            {
+                var e = new eventObject(this,prop,type,this[prop],this[prop],arguments),
+                    a = new actionObject(type,prop,e,arguments),
+                    c;
+                
+                if(_onaction(a) !== true)
+                {
+                    if(isObject(_listeners) && _listeners[a.key] === undefined) _listeners[a.key] = [];
+                    c = (isObject(_listeners) ? _listeners[a.key] : _listeners);
+                    c.push(a.args[1]);
+                }
+                return this;
+            }
+        }
+
+        function removeListener(type,listener)
+        {
+            var _listeners = _arr[listener];
+            return function(prop,func)
+            {
+                var e = new eventObject(this,prop,type,this[prop],this[prop],arguments),
+                    a = new actionObject(type,prop,e,arguments),
+                    c;
+
+                if(_onaction(a) !== true)
+                {
+                    if(a.args[1] !== undefined) c = (isObject(_listeners) ? _listeners[a.key] : _listeners);
+
+                    for(var x=0,len=c.length;x<len;x++)
+                    {
+                        if(c[x].toString() === a.args[1].toString())
+                        {
+                            c.splice(x,1);
+                            return this;
+                        }
+                    }
+                }
+                return this;
+            }
+        }
+
+        function addActionListener(action,func)
+        {
+            if(Object.keys(_actions).indexOf(action) !== -1)
+            {
+                _actions[action].push(func);
+            }
+            else
+            {
+                console.error('There is no action listener by the name: ',action);
+            }
+            return this;
+        }
+
+        function removeActionListener(action,func)
+        {
+            if(Object.keys(_actions).indexOf(action) !== -1)
+            {
+                for(var x=0,_curr=_actions[action],len=_curr.length;x!==len;x++)
+                {
+                    if(_curr[x].toString() === func.toString())
+                    {
+                        _curr.splice(x,1);
+                        return this;
+                    }
+                }
+            }
+            else
+            {
+                console.error('There is no action listener by the name: ',action);
+            }
+            return this;
+        }
+
+        /* Helpers */
         function isObject(v)
         {
-            return (typeof v === 'object' && !!v ? (Object.prototype.toString.call(v) === '[object Object]') : false);
+            return (typeof v === 'object' && !!v && (v.constructor.toString() === Object.toString()));
+        }
+
+        function isArray(v) 
+        {
+            return (typeof v === 'object' && !!v && (v.constructor.toString() === Array.toString()));
         }
 
         function isObservable(obj,prop)
@@ -90,67 +186,123 @@ define([],function(){
             return (Object.getOwnPropertyDescriptor(obj,prop).value === undefined);
         }
 
+        /* Additional functionality */
+        function prototype(prop,value)
+        {
+          if(this[prop] === undefined)
+          {
+              Object.defineProperty(this.__proto__,prop,setDescriptor(value,true,true));
+          }
+          else
+          {
+            console.error('Your attempting to add your prototype with the prop: ',prop,' that already exists');
+          }
+          return this;
+        }
+
+        function stringify()
+        {
+            var cache = [];
+            return JSON.stringify(this,function(key, value) {
+                if(isArray(value) || isObject(value)) 
+                {
+                    if (cache.indexOf(value) !== -1)
+                    {
+                        return;
+                    }
+                    cache.push(value);
+                }
+                return value;
+            });
+        }
+
+        /*Event based functionality */
         function splice(index,remove,insert)
         {
-            var _ret = [],
-                _isInsertArray = isArray(insert),
-                _insertLen = (insert !== undefined ? (_isInsertArray ? insert.length : 1) : 0),
+            var e = new eventObject(this,index,'splice',this[index],undefined,arguments,'__kbdatadeletelisteners'),
+                a = new actionObject('splice',index,e,arguments);
+            if(_onaction(a) !== true)
+            {
+                var _ret = [],
+                _isInsertArray = isArray(a.args[2]),
+                _insertLen = (a.args[2] !== undefined ? (_isInsertArray ? a.args[2].length : 1) : 0),
                 _index = 0;
 
+                if(remove !== 0 && this[((a.key-1)+a.args[1])] !== undefined)
+                {
+                    for(var x=0,len=a.args[1];x<len;x++)
+                    {
+                        _index = (a.key+x);
 
-            if(remove !== 0 && this[((index-1)+remove)] !== undefined)
-            {
-                for(var x=0,len=remove;x<len;x++)
-                {
-                    _index = (index+x);
-                    if(_onremove(this,_index,'remove',this[_index]) !== true)
-                    {
-                        _ret.push(this[(_index-_ret.length)]);
-                        for(var i=index,lenI=(this.length-1);i<lenI;i++)
+                        e.key = _index;
+                        e.type = 'remove';
+                        e.value = this[_index];
+                        
+                        if(_onevent(e) !== true)
                         {
-                            this[i] = this[(i+1)];
-                        }
-                    }
-                    else
-                    {
-                        remove -= 1;
-                    }
-                }
-                this.length = (this.length-remove);
-            }
-            if(_insertLen !== 0)
-            {
-                if(!_isInsertArray) insert = [insert];
-                for(var x=0,len=_insertLen;x<len;x++)
-                {
-                    _index = (index+x);
-                    if(_onadd(this,_index,'add',insert[x],this[_index]) !== true)
-                    {
-                        for(var i=this.length,lenI=_index;i>lenI;i--)
-                        {
-                            if(this[i] === undefined)
+                            _ret.push(this[(_index-_ret.length)]);
+                            for(var i=a.key,lenI=(this.length-1);i<lenI;i++)
                             {
-                                Object.defineProperty(this,i,setBindDescriptor.call(this,this[(i-1)],i));
-                            }
-                            else
-                            {
-                                this[i] = this[(i-1)];
+                                this[i] = this[(i+1)];
                             }
                         }
-                        this[_index] = insert[x];
+                        else
+                        {
+                            a.args[1] -= 1;
+                        }
+                    }
+                    this.length = (this.length-a.args[1]);
+                }
+                if(_insertLen !== 0)
+                {
+                    if(!_isInsertArray) a.args[2] = [a.args[2]];
+                    for(var x=0,len=_insertLen;x<len;x++)
+                    {
+                        _index = (a.key+x);
+
+                        e.key = _index;
+                        e.type = 'add';
+                        e.listener = '__kbdatacreatelisteners';
+                        e.value = a.args[2][x];
+
+                        if(_onevent(e) !== true)
+                        {
+                            for(var i=this.length,lenI=_index;i>lenI;i--)
+                            {
+                                if(this[i] === undefined)
+                                {
+                                    Object.defineProperty(this,i,setBindDescriptor.call(this,this[(i-1)],i));
+                                }
+                                else
+                                {
+                                    this[i] = this[(i-1)];
+                                }
+                            }
+                            this[_index] = a.args[2][x];
+                        }
                     }
                 }
+                a.type = 'postsplice';
+                _onaction(a);
             }
-            _onaction(this,index,'splice',insert,undefined,arguments);
             return _ret;
         }
 
         function push(v)
         {
-            if(_onadd(this,(this.length),'add',v) !== true)
+            var e = new eventObject(this,(this.length),'push',v,undefined,arguments,'__kbdatacreatelisteners'),
+                a = new actionObject('push',(this.length),e,arguments);
+            if(_onaction(a) !== true)
             {
-                Object.defineProperty(this,this.length,setBindDescriptor.call(this,v,this.length));
-                _onaction(this,(this.length-1),'push',v,undefined,arguments);
+                e.type = 'add';
+                e.value = a.args[0];
+                e.key = a.key;
+                if(_onevent(e) !== true)
+                {
+                    Object.defineProperty(this,a.key,setBindDescriptor.call(this,a.args[0],a.key));
+                    a.type = 'postpush';
+                    _onaction(a);
+                }
             }
             return this.length;
         }
@@ -325,84 +477,7 @@ define([],function(){
             return this;
         }
 
-        function stringify()
-        {
-            var cache = [];
-            return JSON.stringify(this,function(key, value) {
-                if(isArray(value) || isObject(value)) 
-                {
-                    if (cache.indexOf(value) !== -1)
-                    {
-                        return;
-                    }
-                    cache.push(value);
-                }
-                return value;
-            });
-        }
-
-        function addListener(type)
-        {
-            var _listeners = this[type];
-            return function(prop,func)
-            {
-                _listeners[prop] = func;
-                return this;
-            }
-        }
-
-        function removeListener(type)
-        {
-            var _listeners = this[type];
-            return function(prop,func)
-            {
-                if(func !== undefined) _listeners = _listeners[prop];
-
-                for(var x=0,len=_listeners.length;x<len;x++)
-                {
-                    if(_listeners[x].toString() === func.toString())
-                    {
-                        _listeners.splice(x,1);
-                        return this;
-                    }
-                }
-                return this;
-            }
-        }
-
-        function addActionListener(action,func)
-        {
-            if(Object.keys(_actions).indexOf(action) !== -1)
-            {
-                _actions[action].push(func);
-            }
-            else
-            {
-                console.error('There is no action listener by the name: ',action);
-            }
-            return this;
-        }
-
-        function removeActionListener(action,func)
-        {
-            if(Object.keys(_actions).indexOf(action) !== -1)
-            {
-                for(var x=0,_curr=_actions[action],len=_curr.length;x!==len;x++)
-                {
-                    if(_curr[x].toString() === func.toString())
-                    {
-                        _curr.splice(x,1);
-                        return this;
-                    }
-                }
-            }
-            else
-            {
-                console.error('There is no action listener by the name: ',action);
-            }
-            return this;
-        }
-
+        /* Descriptor based methods */
         function setPointer(obj,prop,desc)
         {
             return {
@@ -453,19 +528,7 @@ define([],function(){
             }
         }
 
-        function prototype(prop,value)
-        {
-          if(this[prop] === undefined)
-          {
-              Object.defineProperty(this.__proto__,prop,setDescriptor(value,true,true));
-          }
-          else
-          {
-            console.error('Your attempting to add your prototype with the prop: ',prop,' that already exists');
-          }
-          return this;
-        }
-
+        /* Subscriber methods */
         function subscribe(prop,func)
         {
             if(_subscribers[prop] === undefined) _subscribers[prop] = [];
@@ -473,20 +536,35 @@ define([],function(){
             return this;
         }
 
+        function unsubscribe(prop,func)
+        {
+          if(_subscribers[prop] !== undefined)
+          {
+            loop:for(var x=0,len=_subscribers[prop].length;x<len;x++)
+            {
+                if(_subscribers[prop][x].toString() === func.toString())
+                {
+                  _subscribers[prop].splice(x,1);
+                  break loop;
+                }
+            }
+          }
+          return this;
+        }
+
         function callSubscribers(prop,value,oldValue)
         {
             if(_subscribers[prop] !== undefined)
             {
-                var e = new eventObject(this,prop,'subscriber',value,oldValue);
                 for(var x=0,len=_subscribers[prop].length;x<len;x++)
                 {
-                    _subscribers[prop][x](e);
-                    if(e._stopPropogration) break;
+                    _subscribers[prop][x](value);
                 }
             }
             return this;
         }
 
+        /* Define all properties */
         Object.defineProperties(_arr,{
             __kbname:setDescriptor((name || ""),true,true),
             __kbref:setDescriptor((parent ? (parent.__kbref || parent) : _arr),true,true),
@@ -508,6 +586,7 @@ define([],function(){
             stringify:setDescriptor(stringify),
             callSubscribers:setDescriptor(callSubscribers),
             subscribe:setDescriptor(subscribe),
+            unsubscribe:setDescriptor(unsubscribe),
             __kblisteners:setDescriptor({}),
             __kbupdatelisteners:setDescriptor({}),
             __kbparentlisteners:setDescriptor({}),
