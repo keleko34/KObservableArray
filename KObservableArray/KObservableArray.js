@@ -565,7 +565,7 @@ define([],function(){
             
             if(this[index] === undefined)
             {
-                this.add(value,index);
+                this.add(index,value);
             }
             else
             {
