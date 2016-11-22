@@ -508,7 +508,7 @@ define([],function(){
             return this;
         }
 
-        function add(value,index)
+        function add(index,value)
         {
             var e = new eventObject(this,index,'add',value,undefined,arguments,'__kbdatacreatelisteners'),
                 a = new actionObject('add',index,e,arguments);
@@ -525,7 +525,7 @@ define([],function(){
                     {
                         if(_onevent(e) !== true)
                         {
-                            Object.defineProperty(this,a.key,setBindDescriptor.call(this,a.args[0],a.key));
+                            Object.defineProperty(this,a.key,setBindDescriptor.call(this,a.args[1],a.key));
                             a.type = 'postadd';
                             _onaction(a);
                         }
