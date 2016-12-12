@@ -101,7 +101,7 @@ define([],function(){
             };
 
         /* Event Objects */
-        function eventObject(arr,key,action,value,oldValue,args)
+        function eventObject(arr,key,action,value,oldValue,args,stopChange)
         {
             this.stopPropogation = function(){this._stopPropogration = true;}
             this.preventDefault = function(){this._preventDefault = true;}
@@ -115,6 +115,7 @@ define([],function(){
             this.parent = arr.___kbImmediateParent;
             this.value = value;
             this.oldValue = oldValue;
+            this.stopChange = stopChange;
         }
 
         function actionObject(type,prop,ev,args)
@@ -515,7 +516,7 @@ define([],function(){
             var e = new eventObject(this,index,'add',value,undefined,arguments,'__kbdatacreatelisteners'),
                 a = new actionObject('add',index,e,arguments);
 
-            if(index === undefined)
+            if(value === undefined)
             {
                 this.push(value);
             }
@@ -560,7 +561,7 @@ define([],function(){
             return this;
         }
 
-        function set(index,value,stopChange)
+        function set(index,value)
         {
             var e = new eventObject(this,index,'set',value,this[index],arguments,'__kblisteners'),
                 a = new actionObject('set',index,e,arguments);
@@ -579,7 +580,7 @@ define([],function(){
                     {
                         if(isObservable(this,a.key))
                         {
-                            Object.getOwnPropertyDescriptor(this,a.key).set(a.args[1],stopChange);
+                            this[a.key] = a.args[1];
                         }
                         else
                         {
@@ -619,7 +620,9 @@ define([],function(){
                     return obj[prop];
                 },
                 set:function(v){
-                    obj[prop] = v;
+
+                  (this._stopChange ? obj.stopChange() : obj)[prop] = v;
+                  this._stopChange = undefined;
                 },
                 enumerable:desc.enumerable,
                 configurable:desc.configurable
@@ -653,10 +656,10 @@ define([],function(){
                 get:function(){
                     return _value;
                 },
-                set:function(v,stopChange)
+                set:function(v)
                 {
                     var e = new eventObject(this,_prop,'set',v,_value,arguments,'__kblisteners');
-                    if(!stopChange)
+                    if(!this._stopChange)
                     {
                         if(_onevent(e) !== true)
                         {
@@ -668,6 +671,7 @@ define([],function(){
                     {
                         _set(v,e);
                     }
+                    this._stopChange = undefined;
                 },
                 configurable:true,
                 enumerable:true
@@ -729,6 +733,12 @@ define([],function(){
             return this;
         }
 
+        function stopChange()
+        {
+          this._stopChange = true;
+          return this;
+        }
+
         /* Define all properties */
         Object.defineProperties(_arr,{
             __kbname:setDescriptor((name || ""),true,true),
@@ -759,7 +769,8 @@ define([],function(){
             __kbdatacreatelisteners:setDescriptor([]),
             __kbdatadeletelisteners:setDescriptor([]),
             addActionListener:setDescriptor(addActionListener),
-            removeActionListener:setDescriptor(removeActionListener)
+            removeActionListener:setDescriptor(removeActionListener),
+            stopChange:setDescriptor(stopChange)
         });
 
         Object.defineProperties(_arr,{
