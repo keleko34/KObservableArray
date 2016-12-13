@@ -648,9 +648,12 @@ define([],function(){
                 {
                     _oldValue = _value;
                     _value = v;
+                  if(!e.stopChange)
+                  {
                     e.listener = '__kbupdatelisteners';
                     e.type = 'update';
                     _onevent(e);
+                  }
                 };
             return {
                 get:function(){
@@ -659,17 +662,10 @@ define([],function(){
                 set:function(v)
                 {
                     var e = new eventObject(this,_prop,'set',v,_value,arguments,'__kblisteners',this._stopChange);
-                    if(!this._stopChange)
+                    if(_onevent(e) !== true)
                     {
-                        if(_onevent(e) !== true)
-                        {
-                            _set(v,e);
-                            this.callSubscribers(_prop,_value,_oldValue);
-                        }
-                    }
-                    else
-                    {
-                        _set(v,e);
+                       _set(v,e);
+                      if(!this._stopChange) this.callSubscribers(_prop,_value,_oldValue);
                     }
                     this._stopChange = undefined;
                 },
