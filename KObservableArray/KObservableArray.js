@@ -658,7 +658,7 @@ define([],function(){
                 },
                 set:function(v)
                 {
-                    var e = new eventObject(this,_prop,'set',v,_value,arguments,'__kblisteners');
+                    var e = new eventObject(this,_prop,'set',v,_value,arguments,'__kblisteners',this._stopChange);
                     if(!this._stopChange)
                     {
                         if(_onevent(e) !== true)
