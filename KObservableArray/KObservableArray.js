@@ -766,7 +766,8 @@ define([],function(){
             __kbdatadeletelisteners:setDescriptor([]),
             addActionListener:setDescriptor(addActionListener),
             removeActionListener:setDescriptor(removeActionListener),
-            stopChange:setDescriptor(stopChange)
+            stopChange:setDescriptor(stopChange),
+            _stopChange:setDescriptor(undefined,true)
         });
 
         Object.defineProperties(_arr,{
