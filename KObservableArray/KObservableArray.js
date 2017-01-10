@@ -336,6 +336,7 @@ define([],function(){
                         e.listener = '__kbdatacreatelisteners';
                         e.value = a.args[2][x];
                         a.type = 'add';
+                        a.key = _index;
 
                         if(_onaction(a) !== true && _onevent(e) !== true)
                         {
