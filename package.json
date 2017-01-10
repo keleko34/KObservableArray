@@ -1,6 +1,6 @@
 {
   "name": "KObservableArray",
-  "version": "1.2.2",
+  "version": "1.2.6",
   "description": "A single layer event based observable array",
   "keywords": [
     "Array",
@@ -30,7 +30,7 @@
     "url": "https://github.com/keleko34/KObservableArray/issues"
   },
   "devDependencies": {
-    "K_Tasks": "^0.4.3"
+    "K_Tasks": "^0.5.0"
   },
   "scripts": {
     "build": "gulp build"
