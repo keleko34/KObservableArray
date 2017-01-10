@@ -4,6 +4,7 @@ define([],function(){
     {
         var _arr = [],
             _subscribers = {},
+            /* Need to simplify this */
             _actions = {
                 splice:[],
                 postsplice:[],
@@ -294,12 +295,14 @@ define([],function(){
                     for(var x=0,len=a.args[1];x<len;x++)
                     {
                         _index = (a.key+x);
-
+                      
                         e.key = _index;
                         e.type = 'remove';
                         e.value = this[_index];
-                        
-                        if(_onevent(e) !== true)
+                        a.key = _index;
+                        a.type = 'remove';
+                      
+                        if(_onaction(a) !== true && _onevent(e) !== true)
                         {
                             _ret.push(this[(_index-_ret.length)]);
                             for(var i=a.key,lenI=(this.length-1);i<lenI;i++)
@@ -313,6 +316,12 @@ define([],function(){
                         }
                     }
                     this.length = (this.length-a.args[1]);
+                    for(var x=0,len=(a.args[1]);x<len;x++)
+                    {
+                      a.type = 'postremove';
+                      a.key = (this.length+x);
+                      _onaction(a);
+                    }
                 }
                 if(_insertLen !== 0)
                 {
@@ -325,14 +334,18 @@ define([],function(){
                         e.type = 'add';
                         e.listener = '__kbdatacreatelisteners';
                         e.value = a.args[2][x];
+                        a.type = 'add';
 
-                        if(_onevent(e) !== true)
+                        if(_onaction(a) !== true && _onevent(e) !== true)
                         {
                             for(var i=this.length,lenI=_index;i>lenI;i--)
                             {
                                 if(this[i] === undefined)
                                 {
                                     Object.defineProperty(this,i,setBindDescriptor.call(this,this[(i-1)],i));
+                                    a.key = i;
+                                    a.type = 'postadd';
+                                    _onaction(a);
                                 }
                                 else
                                 {
@@ -358,9 +371,12 @@ define([],function(){
                 e.type = 'add';
                 e.value = a.args[0];
                 e.key = a.key;
-                if(_onevent(e) !== true)
+                a.type = 'add';
+                if(_onaction(a) !== true && _onevent(e) !== true)
                 {
                     Object.defineProperty(this,a.key,setBindDescriptor.call(this,a.args[0],a.key));
+                    a.type = 'postadd';
+                    _onaction(a);
                     a.type = 'postpush';
                     _onaction(a);
                 }
@@ -376,9 +392,12 @@ define([],function(){
             {
                 var _ret = this[(this.length-1)];
                 e.type = 'remove';
-                if(_onevent(e) !== true)
+                a.type = 'remove';
+                if(_onaction(a) !== true && _onevent(e) !== true)
                 {
                     this.length = (this.length-1);
+                    a.type = 'postremove';
+                    _onaction(a);
                     a.type = 'postpop';
                     _onaction(a);
                     return _ret;
@@ -397,14 +416,16 @@ define([],function(){
                 var _ret = this[a.key];
                 e.type = 'remove';
                 e.key = a.key;
-                if(_onevent(e) !== true)
+                a.type = 'remove';
+                if(_onaction(a) !== true && _onevent(e) !== true)
                 {
                     for(var x=a.key,len=(this.length-1);x<len;x++)
                     {
                         this[x] = this[(x+1)];
                     }
                     this.length = (this.length-1);
-
+                    a.type = 'postremove';
+                    _onaction(a);
                     a.type = 'postshift';
                     _onaction(a);
                     return _ret;
@@ -425,7 +446,9 @@ define([],function(){
                     e.key = x;
                     e.type = 'add';
                     e.value = args[x];
-                    if(_onevent(e) === true)
+                    a.type = 'add';
+                    a.key = x;
+                    if(_onaction(a) === true || _onevent(e) === true)
                     {
                         args.splice(x,1);
                     }
@@ -443,6 +466,8 @@ define([],function(){
                             if(!isObservable(this,x))
                             {
                                 Object.defineProperty(this,x,setBindDescriptor.call(this,this[(x-args.length)],x));
+                                a.type = 'postadd';
+                                _onaction(a);
                             }
                             else
                             {
