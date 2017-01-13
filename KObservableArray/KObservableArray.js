@@ -317,10 +317,10 @@ define([],function(){
                         }
                     }
                     this.length = (this.length-a.args[1]);
-                    for(var x=0,len=(a.args[1]);x<len;x++)
+                    for(var x=(this.length+a.args[1]),len=this.length;x>len;x--)
                     {
                       a.type = 'postremove';
-                      a.key = (this.length+x);
+                      a.key = x;
                       _onaction(a);
                     }
                 }
@@ -568,7 +568,7 @@ define([],function(){
             }
             return this;
         }
-
+        
         function addPointer(objArr,prop,newProp)
         {
             var e = new eventObject(this,(newProp || prop),'add',objArr[prop],undefined,arguments,'__kbdatacreatelisteners'),
@@ -580,6 +580,8 @@ define([],function(){
                 {
                     var desc = Object.getOwnPropertyDescriptor(objArr,prop);
                     Object.defineProperty(this,a.key,setPointer(objArr,prop,desc));
+                    
+                  
                     a.type = 'postadd';
                     _onaction(a);
                 }
