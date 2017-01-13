@@ -287,59 +287,56 @@ define([],function(){
             if(_onaction(a) !== true)
             {
                 var _ret = [],
-                _isInsertArray = isArray(a.args[2]),
-                _insertLen = (a.args[2] !== undefined ? (_isInsertArray ? a.args[2].length : 1) : 0),
+                _inserts = Array.prototype.slice.call(arguments),
+                _insertLen = (_inserts.length-2),
                 _index = 0;
+              
+                _inserts.splice(0,2);
 
                 if(remove !== 0 && this[((a.key-1)+a.args[1])] !== undefined)
                 {
                     for(var x=0,len=a.args[1];x<len;x++)
                     {
-                        _index = (a.key+x);
+                        _index = a.key;
                       
                         e.key = _index;
                         e.type = 'remove';
                         e.value = this[_index];
-                        a.key = _index;
                         a.type = 'remove';
                       
                         if(_onaction(a) !== true && _onevent(e) !== true)
                         {
-                            _ret.push(this[(_index-_ret.length)]);
+                            _ret.push(this[_index]);
                             for(var i=a.key,lenI=(this.length-1);i<lenI;i++)
                             {
                                 this[i] = this[(i+1)];
                             }
+                            this.length = (this.length-1);
+                            a.type = 'postremove';
+                            _onaction(a);
                         }
                         else
                         {
                             a.args[1] -= 1;
                         }
                     }
-                    this.length = (this.length-a.args[1]);
-                    for(var x=(this.length+a.args[1]),len=this.length;x>len;x--)
-                    {
-                      a.type = 'postremove';
-                      a.key = x;
-                      _onaction(a);
-                    }
                 }
                 if(_insertLen !== 0)
                 {
-                    if(!_isInsertArray) a.args[2] = [a.args[2]];
                     for(var x=0,len=_insertLen;x<len;x++)
                     {
-                        _index = (a.key+x);
+                        _index = (a.key+(Math.min(1,x)));
 
                         e.key = _index;
                         e.type = 'add';
                         e.listener = '__kbdatacreatelisteners';
-                        e.value = a.args[2][x];
+                        e.value = _inserts[x];
                         a.type = 'add';
                         a.key = _index;
 
                         if(_onaction(a) !== true && _onevent(e) !== true)
                         {
+                            var currentLen = this.length;
                             for(var i=this.length,lenI=_index;i>lenI;i--)
                             {
                                 if(this[i] === undefined)
@@ -354,7 +351,7 @@ define([],function(){
                                     this[i] = this[(i-1)];
                                 }
                             }
-                            this[_index] = a.args[2][x];
+                            this[_index] = _inserts[x];
                         }
                     }
                 }
@@ -544,7 +541,7 @@ define([],function(){
 
             if(value === undefined)
             {
-                this.push(value);
+                this.push(index);
             }
             else
             {
