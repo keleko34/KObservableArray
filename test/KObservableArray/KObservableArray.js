@@ -796,14 +796,14 @@ define([],function(){
         });
 
         Object.defineProperties(_arr,{
-            addDataListener:setDescriptor(addListener('__kblisteners')),
-            removeDataListener:setDescriptor(removeListener('__kblisteners')),
-            addDataUpdateListener:setDescriptor(addListener('__kbupdatelisteners')),
-            removeDataUpdateListener:setDescriptor(removeListener('__kbupdatelisteners')),
-            addDataCreateListener:setDescriptor(addListener('__kbdatacreatelisteners')),
-            removeDataCreateListener:setDescriptor(removeListener('__kbdatacreatelisteners')),
-            addDataRemoveListener:setDescriptor(addListener('__kbdatadeletelisteners')),
-            removeDataRemoveListener:setDescriptor(removeListener('__kbdatadeletelisteners'))
+            addDataListener:setDescriptor(addListener('addDataListener','__kblisteners')),
+            removeDataListener:setDescriptor(removeListener('removeDataListener','__kblisteners')),
+            addDataUpdateListener:setDescriptor(addListener('addDataUpdateListener','__kbupdatelisteners')),
+            removeDataUpdateListener:setDescriptor(removeListener('removeDataUpdateListener','__kbupdatelisteners')),
+            addDataCreateListener:setDescriptor(addListener('addDataCreateListener','__kbdatacreatelisteners')),
+            removeDataCreateListener:setDescriptor(removeListener('addDataCreateListener','__kbdatacreatelisteners')),
+            addDataRemoveListener:setDescriptor(addListener('addDataRemoveListener','__kbdatadeletelisteners')),
+            removeDataRemoveListener:setDescriptor(removeListener('removeDataRemoveListener','__kbdatadeletelisteners'))
         });
 
         return _arr;
