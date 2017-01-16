@@ -102,7 +102,7 @@ define([],function(){
             };
 
         /* Event Objects */
-        function eventObject(arr,key,action,value,oldValue,args,stopChange)
+        function eventObject(arr,key,action,value,oldValue,args,listener,stopChange)
         {
             this.stopPropogation = function(){this._stopPropogration = true;}
             this.preventDefault = function(){this._preventDefault = true;}
@@ -110,6 +110,7 @@ define([],function(){
             this.key = key;
             this.arguments = args;
             this.type = action;
+            this.listener = listener;
             this.name = arr.__kbname;
             this.root = arr.__kbref;
             this.scope = arr.__kbscopeString;
@@ -135,7 +136,7 @@ define([],function(){
             var _listeners = _arr[listener];
             return function(prop, func) 
             {
-                var e = new eventObject(this, (isObject(_listeners) ? prop : ""), type, (isObject(_listeners) ? this[prop] : ""), (isObject(_listeners) ? this[prop] : ""), arguments),
+                var e = new eventObject(this, (isObject(_listeners) ? prop : ""), type, (isObject(_listeners) ? this[prop] : ""), (isObject(_listeners) ? this[prop] : ""), arguments, listener),
                     a = new actionObject(type, (isObject(_listeners) ? prop : ""), e, arguments),
                     c;
                 if (_onaction(a) !== true) {
@@ -161,7 +162,7 @@ define([],function(){
             var _listeners = _arr[listener];
             return function(prop,func)
             {
-                var e = new eventObject(this,prop,type,this[prop],this[prop],arguments),
+                var e = new eventObject(this,prop,type,this[prop],this[prop],arguments,listener),
                     a = new actionObject(type,prop,e,arguments),
                     c;
 
@@ -702,7 +703,7 @@ define([],function(){
         /* Subscriber methods */
         function subscribe(prop,func)
         {
-            var e = new eventObject(this,prop,'subscribe',this[prop],undefined,arguments),
+            var e = new eventObject(this,prop,'subscribe',this[prop],undefined,arguments,'__kbsubscribers'),
                 a = new actionObject('subscribe',prop,e,arguments);
             
             if(_onaction(a) !== true)
@@ -715,7 +716,7 @@ define([],function(){
 
         function unsubscribe(prop,func)
         {
-            var e = new eventObject(this,prop,'unsubscribe',this[prop],undefined,arguments),
+            var e = new eventObject(this,prop,'unsubscribe',this[prop],undefined,arguments,'__kbsubscribers'),
                 a = new actionObject('unsubscribe',prop,e,arguments);
                 
             if(_onaction(a) !== true)
